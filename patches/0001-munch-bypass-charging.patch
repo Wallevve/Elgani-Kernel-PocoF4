@@ -49,7 +49,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
 -	rc = vote(chg->usb_icl_votable, USER_VOTER, (bool)val->intval, 0);
 +	rc = vote(chg->usb_icl_votable, USER_VOTER, false, 0);
  	if (rc < 0) {
- 		smblib_err(chg, "Couldn't vote to %s USB rc=%d\\n",
+ 		smblib_err(chg, "Couldn't vote to %s USB rc=%d\n",
  			(bool)val->intval ? "suspend" : "resume", rc);
  		return rc;
  	}
@@ -57,7 +57,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
 -	rc = vote(chg->dc_suspend_votable, USER_VOTER, (bool)val->intval, 0);
 +	rc = vote(chg->dc_suspend_votable, USER_VOTER, false, 0);
  	if (rc < 0) {
- 		smblib_err(chg, "Couldn't vote to %s DC rc=%d\\n",
+ 		smblib_err(chg, "Couldn't vote to %s DC rc=%d\n",
  			(bool)val->intval ? "suspend" : "resume", rc);
  		return rc;
  	}
@@ -74,7 +74,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
 +	}
 +
 +	if (rc < 0) {
-+		smblib_err(chg, "Couldn't vote to %d input_suspend rc=%d\\n",
++		smblib_err(chg, "Couldn't vote to %d input_suspend rc=%d\n",
 +			val->intval, rc);
 +		return rc;
 +	}
@@ -100,4 +100,4 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
 +		chg->system_temp_level = 0;
  
  	smblib_dbg(chg, PR_OEM, "thermal level:%d, thermal_levels:%d "
- 			"chg->system_temp_level:%d, charger_type:%d\\n",
+ 			"chg->system_temp_level:%d, charger_type:%d\n",
