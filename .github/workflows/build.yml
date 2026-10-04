@@ -91,3 +91,15 @@ jobs:
             kernel/out_*/arch/arm64/boot/dtb
           if-no-files-found: error
           compression-level: 0
+
+      - name: Create GitHub Release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v1.0.${{ github.run_number }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            kernel/APTKernel_*.zip \
+            --title "Elgani Kernel POCO F4 $RELEASE_TAG" \
+            --generate-notes \
+            --target "$GITHUB_SHA"
