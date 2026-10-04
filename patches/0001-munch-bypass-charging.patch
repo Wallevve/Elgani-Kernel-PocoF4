@@ -22,8 +22,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
  
  static void update_sw_icl_max(struct smb_charger *chg, int pst);
  static int smblib_get_prop_typec_mode(struct smb_charger *chg);
-@@ -2408,9 +2409,15 @@ int smblib_get_prop_input_suspend(struct smb_charger *chg,
- int smblib_get_prop_input_suspend(struct smb_charger *chg,
+@@ -2408,9 +2409,15 @@
  				  union power_supply_propval *val)
  {
 -	val->intval
@@ -38,8 +37,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
 +
  	return 0;
  }
-@@ -3173,22 +3180,37 @@ int smblib_set_prop_input_suspend(struct smb_charger *chg,
- int smblib_set_prop_input_suspend(struct smb_charger *chg,
+@@ -3173,22 +3180,37 @@
  				  const union power_supply_propval *val)
  {
 -	int rc;
@@ -82,7 +80,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
  	power_supply_changed(chg->batt_psy);
  	return rc;
  }
-@@ -3604,6 +3626,9 @@ static void smblib_thermal_setting_work(struct work_struct *work)
+@@ -3604,6 +3626,9 @@
  	struct smb_charger *chg = container_of(work, struct smb_charger,
  			thermal_setting_work.work);
  
@@ -92,7 +90,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
  	if (chg->pps_thermal_level > chg->system_temp_level) {
  		if (chg->pps_thermal_level - chg->system_temp_level >= 2)
  			chg->pps_thermal_level -= 2;
-@@ -3645,6 +3670,9 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
+@@ -3645,6 +3670,9 @@
  		return -EINVAL;
  
  	chg->system_temp_level = val->intval;
