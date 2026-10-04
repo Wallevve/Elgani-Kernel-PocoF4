@@ -1,0 +1,93 @@
+name: Build Elgani Kernel - POCO F4
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      target_os:
+        description: "Target kernel variant"
+        required: true
+        type: choice
+        default: "aosp"
+        options: [aosp, miui, both]
+      ksu:
+        description: "Enable ReSukiSU + SuSFS"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  KERNEL_REPO: AstideLabs/android_kernel_xiaomi_sm8250
+  KERNEL_REF: android17-aptusitu
+  MUNCH_DT_REPO: xiaomi-sm8250-devs/android_device_xiaomi_munch
+  MUNCH_DT_REF: lineage-23.2
+  DEVICE: munch
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Elgani build repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache curl flex gawk git gnupg gperf imagemagick libncurses-dev lib32readline-dev lib32z1-dev liblz4-tool libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache_mikernel
+          key: ${{ runner.os }}-munch-kernel-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-munch-kernel-
+
+      - name: Clone AstideLabs kernel
+        run: |
+          git clone --depth=1 --branch "$KERNEL_REF" "https://github.com/$KERNEL_REPO.git" kernel
+          cd kernel
+          git log -1 --oneline
+          test -f arch/arm64/configs/munch_defconfig
+          test -f arch/arm64/configs/munch_stock-defconfig
+
+      - name: Clone POCO F4 device tree reference
+        run: |
+          git clone --depth=1 --branch "$MUNCH_DT_REF" "https://github.com/$MUNCH_DT_REPO.git" device_xiaomi_munch
+          cd device_xiaomi_munch
+          git log -1 --oneline
+
+      - name: Setup ZyCromerZ Clang 16
+        run: |
+          mkdir -p "$HOME/zyc-clang"
+          cd "$HOME/zyc-clang"
+          wget -q "https://github.com/ZyCromerZ/Clang/releases/download/16.0.6-20260807-release/Clang-16.0.6-20260807.tar.gz"
+          tar -xzf Clang-16.0.6-20260807.tar.gz
+
+      - name: Build kernel
+        working-directory: kernel
+        env:
+          TARGET_OS: ${{ github.event.inputs.target_os || 'aosp' }}
+          ENABLE_KSU: ${{ github.event.inputs.ksu || 'false' }}
+        run: |
+          chmod +x build_kernel.sh
+          args="munch"
+          if [ "$ENABLE_KSU" = "true" ]; then args="$args ksu"; fi
+          if [ "$TARGET_OS" != "both" ]; then args="$args $TARGET_OS"; fi
+          ./build_kernel.sh $args
+
+      - name: Upload kernel
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Elgani-Kernel-PocoF4-${{ github.run_number }}
+          path: |
+            kernel/APTKernel_*.zip
+            kernel/out_*/arch/arm64/boot/Image
+            kernel/out_*/arch/arm64/boot/dtb
+          if-no-files-found: error
+          compression-level: 0
