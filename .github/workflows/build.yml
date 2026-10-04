@@ -55,6 +55,15 @@ jobs:
           test -f arch/arm64/configs/munch_defconfig
           test -f arch/arm64/configs/munch_stock-defconfig
 
+          # Rebrand the source tree: APTKernel -> ElganiKernel
+          echo "[*] Rebranding source tree APTKernel -> ElganiKernel..."
+          grep -RIl "APTKernel" . --exclude-dir=.git | xargs -r sed -i 's/APTKernel/ElganiKernel/g'
+          if grep -RIn "APTKernel" . --exclude-dir=.git; then
+            echo "[!] APTKernel reference still exists after rebranding."
+            exit 1
+          fi
+          echo "[+] Source branding verified: ElganiKernel"
+
       - name: Clone POCO F4 device tree reference
         run: |
           git clone --depth=1 --branch "$MUNCH_DT_REF" "https://github.com/$MUNCH_DT_REPO.git" device_xiaomi_munch
@@ -80,11 +89,6 @@ jobs:
           if [ "$TARGET_OS" != "both" ]; then args="$args $TARGET_OS"; fi
           ./build_kernel.sh $args
 
-          # Rebrand the generated AnyKernel3 package
-          for zip in APTKernel_*.zip; do
-            [ -e "$zip" ] || continue
-            mv "$zip" "${zip/APTKernel_/ElganiKerkel_}"
-          done
 
       - name: Upload kernel
         if: success()
@@ -92,7 +96,7 @@ jobs:
         with:
           name: Elgani-Kernel-PocoF4-${{ github.run_number }}
           path: |
-            kernel/ElganiKerkel_*.zip
+            kernel/ElganiKernel_*.zip
             kernel/out_*/arch/arm64/boot/Image
             kernel/out_*/arch/arm64/boot/dtb
           if-no-files-found: error
