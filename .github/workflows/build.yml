@@ -64,6 +64,15 @@ jobs:
           fi
           echo "[+] Source branding verified: ElganiKernel"
 
+      - name: Apply POCO F4 bypass charging
+        working-directory: kernel
+        run: |
+          echo "[*] Applying Munch bypass charging patch..."
+          git apply ../patches/0001-munch-bypass-charging.patch
+          grep -n "BYPASS_VOTER" drivers/power/supply/qcom/smb5-lib-munch.h
+          grep -n "bypass_charging" drivers/power/supply/qcom/smb5-lib-munch.c
+          echo "[+] Bypass charging patch applied"
+
       - name: Clone POCO F4 device tree reference
         run: |
           git clone --depth=1 --branch "$MUNCH_DT_REF" "https://github.com/$MUNCH_DT_REPO.git" device_xiaomi_munch
@@ -109,7 +118,7 @@ jobs:
           RELEASE_TAG: v1.0.${{ github.run_number }}
         run: |
           gh release create "$RELEASE_TAG" \
-            kernel/ElganiKerkel_*.zip \
+            kernel/ElganiKernel_*.zip \
             --title "Elgani Kernel POCO F4 $RELEASE_TAG" \
             --generate-notes \
             --target "$GITHUB_SHA"
