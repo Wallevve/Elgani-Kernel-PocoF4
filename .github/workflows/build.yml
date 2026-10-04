@@ -80,13 +80,19 @@ jobs:
           if [ "$TARGET_OS" != "both" ]; then args="$args $TARGET_OS"; fi
           ./build_kernel.sh $args
 
+          # Rebrand the generated AnyKernel3 package
+          for zip in APTKernel_*.zip; do
+            [ -e "$zip" ] || continue
+            mv "$zip" "${zip/APTKernel_/ElganiKerkel_}"
+          done
+
       - name: Upload kernel
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Elgani-Kernel-PocoF4-${{ github.run_number }}
           path: |
-            kernel/APTKernel_*.zip
+            kernel/ElganiKerkel_*.zip
             kernel/out_*/arch/arm64/boot/Image
             kernel/out_*/arch/arm64/boot/dtb
           if-no-files-found: error
@@ -99,7 +105,7 @@ jobs:
           RELEASE_TAG: v1.0.${{ github.run_number }}
         run: |
           gh release create "$RELEASE_TAG" \
-            kernel/APTKernel_*.zip \
+            kernel/ElganiKerkel_*.zip \
             --title "Elgani Kernel POCO F4 $RELEASE_TAG" \
             --generate-notes \
             --target "$GITHUB_SHA"
