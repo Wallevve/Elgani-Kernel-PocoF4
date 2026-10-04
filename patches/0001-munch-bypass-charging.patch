@@ -13,7 +13,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.h b/drivers/power/supply/q
 diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/qcom/smb5-lib-munch.c
 --- a/drivers/power/supply/qcom/smb5-lib-munch.c
 +++ b/drivers/power/supply/qcom/smb5-lib-munch.c
-@@ -38,6 +38,7 @@
+@@ -38,7 +38,8 @@
  	&& (!chg->typec_legacy || chg->typec_legacy_use_rp_icl))
  
  bool off_charge_flag;
@@ -22,7 +22,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
  
  static void update_sw_icl_max(struct smb_charger *chg, int pst);
  static int smblib_get_prop_typec_mode(struct smb_charger *chg);
-@@ -2408,9 +2409,15 @@
+@@ -2408,8 +2409,11 @@
  				  union power_supply_propval *val)
  {
 -	val->intval
@@ -34,14 +34,13 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
 +		val->intval = 2;
 +	else
 +		val->intval = 0;
-+
+ 
  	return 0;
  }
-@@ -3173,22 +3180,37 @@
+@@ -3173,22 +3180,39 @@
  				  const union power_supply_propval *val)
  {
--	int rc;
-+	int rc;
+ 	int rc;
  
  	/* vote 0mA when suspended */
 -	rc = vote(chg->usb_icl_votable, USER_VOTER, (bool)val->intval, 0);
@@ -62,13 +61,13 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
  
 +	if (val->intval == 1) {
 +		rc = vote(chg->chg_disable_votable, BYPASS_VOTER, true, 0);
-+		bypass_charging = 0;
++	bypass_charging = 0;
 +	} else if (val->intval == 2) {
 +		rc = vote(chg->chg_disable_votable, BYPASS_VOTER, false, 0);
-+		bypass_charging = 1;
++	bypass_charging = 1;
 +	} else {
 +		rc = vote(chg->chg_disable_votable, BYPASS_VOTER, false, 0);
-+		bypass_charging = 0;
++	bypass_charging = 0;
 +	}
 +
 +	if (rc < 0) {
@@ -90,7 +89,7 @@ diff --git a/drivers/power/supply/qcom/smb5-lib-munch.c b/drivers/power/supply/q
  	if (chg->pps_thermal_level > chg->system_temp_level) {
  		if (chg->pps_thermal_level - chg->system_temp_level >= 2)
  			chg->pps_thermal_level -= 2;
-@@ -3645,6 +3670,9 @@
+@@ -3645,6 +3670,8 @@
  		return -EINVAL;
  
  	chg->system_temp_level = val->intval;
