@@ -33,7 +33,7 @@ old_get = '''int smblib_get_prop_input_suspend(struct smb_charger *chg,
 {
 \tval->intval
 \t\t= (get_client_vote(chg->usb_icl_votable, USER_VOTER) == 0)
-\t\t\t || get_client_vote(chg->dc_suspend_votable, USER_VOTER);
+\t\t || get_client_vote(chg->dc_suspend_votable, USER_VOTER);
 \treturn 0;
 }
 '''
