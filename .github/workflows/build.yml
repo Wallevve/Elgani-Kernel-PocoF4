@@ -15,7 +15,7 @@ on:
         description: "Enable ReSukiSU + SuSFS"
         required: true
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: write
@@ -89,7 +89,7 @@ jobs:
         working-directory: kernel
         env:
           TARGET_OS: ${{ github.event.inputs.target_os || 'aosp' }}
-          ENABLE_KSU: ${{ github.event.inputs.ksu || 'false' }}
+          ENABLE_KSU: ${{ github.event_name == 'push' && 'true' || github.event.inputs.ksu || 'true' }}
         run: |
           chmod +x build_kernel.sh
           args="munch"
