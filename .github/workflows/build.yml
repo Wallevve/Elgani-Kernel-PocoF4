@@ -138,6 +138,15 @@ jobs:
           scripts/config --file arch/arm64/configs/munch_defconfig -e KPROBES -e HAVE_KPROBES -e KPROBE_EVENTS
           echo "[+] KPROBES enabled for non-GKI KernelSU compatibility"
 
+      - name: Apply kernel identity and KernelSU version
+        run: |
+          echo "[*] Applying runtime kernel release spoof and KernelSU driver version..."
+          python3 scripts/apply_kernel_identity.py
+          grep -n '\\.release = "5.10.257"' kernel/init/version.c
+          grep -n 'Linux version 5.10.257' kernel/init/version.c
+          grep -n 'KSU_VERSION=32603' kernel/KernelSU/kernel/Kbuild
+          echo "[+] Kernel identity verified: 5.10.257 / KernelSU 32603"
+
       - name: Build kernel
         working-directory: kernel
         env:
