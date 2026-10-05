@@ -12,7 +12,7 @@ on:
         default: "aosp"
         options: [aosp, miui, both]
       ksu:
-        description: "Enable official KernelSU"
+        description: "Enable official KernelSU v0.9.5"
         required: true
         type: boolean
         default: true
@@ -26,6 +26,7 @@ env:
   MUNCH_DT_REPO: xiaomi-sm8250-devs/android_device_xiaomi_munch
   MUNCH_DT_REF: lineage-23.2
   DEVICE: munch
+  KSU_VERSION: v0.9.5
 
 jobs:
   build:
@@ -95,7 +96,7 @@ jobs:
           s = p.read_text()
 
           old = 'curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash'
-          new = 'curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash'
+          new = 'curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5'
           if old not in s:
               raise SystemExit("Expected ReSukiSU setup command not found")
           s = s.replace(old, new)
@@ -129,7 +130,13 @@ jobs:
             echo "[!] ReSukiSU/SuSFS references remain in build script."
             exit 1
           fi
-          echo "[+] Official KernelSU integration verified"
+          echo "[+] Official KernelSU v0.9.5 integration verified"
+
+      - name: Ensure KPROBES for KernelSU v0.9.5
+        working-directory: kernel
+        run: |
+          scripts/config --file arch/arm64/configs/munch_defconfig -e KPROBES -e HAVE_KPROBES -e KPROBE_EVENTS
+          echo "[+] KPROBES enabled for non-GKI KernelSU compatibility"
 
       - name: Build kernel
         working-directory: kernel
