@@ -12,7 +12,7 @@ on:
         default: "aosp"
         options: [aosp, miui, both]
       ksu:
-        description: "Enable ReSukiSU + SuSFS"
+        description: "Enable official KernelSU"
         required: true
         type: boolean
         default: true
@@ -55,7 +55,6 @@ jobs:
           test -f arch/arm64/configs/munch_defconfig
           test -f arch/arm64/configs/munch_stock-defconfig
 
-          # Rebrand the source tree: APTKernel -> ElganiKernel
           echo "[*] Rebranding source tree APTKernel -> ElganiKernel..."
           grep -RIl "APTKernel" . --exclude-dir=.git | xargs -r sed -i 's/APTKernel/ElganiKernel/g'
           if grep -RIn "APTKernel" . --exclude-dir=.git; then
@@ -84,6 +83,53 @@ jobs:
           cd "$HOME/zyc-clang"
           wget -q "https://github.com/ZyCromerZ/Clang/releases/download/16.0.6-20260807-release/Clang-16.0.6-20260807.tar.gz"
           tar -xzf Clang-16.0.6-20260807.tar.gz
+
+      - name: Prepare official KernelSU build integration
+        working-directory: kernel
+        run: |
+          echo "[*] Converting AstideLabs KSU integration from ReSukiSU to official KernelSU..."
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("build_kernel.sh")
+          s = p.read_text()
+
+          old = 'curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash'
+          new = 'curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash'
+          if old not in s:
+              raise SystemExit("Expected ReSukiSU setup command not found")
+          s = s.replace(old, new)
+
+          s = s.replace(
+              'echo " [*] Initializing KernelSU (ReSukiSU) Setup"',
+              'echo " [*] Initializing official KernelSU Setup"'
+          )
+          s = s.replace(
+              'echo "[*] Downloading and running ReSukiSU remote setup script..."',
+              'echo "[*] Downloading and running official KernelSU remote setup script..."'
+          )
+
+          old_cfg = '''        scripts/config --file "${OUT_DIR}/.config" \
+            -e KSU \
+            -e THREAD_INFO_IN_TASK \
+            -e KSU_SUSFS'''
+          new_cfg = '''        scripts/config --file "${OUT_DIR}/.config" \
+            -e KSU \
+            -e THREAD_INFO_IN_TASK'''
+          if old_cfg not in s:
+              raise SystemExit("Expected ReSukiSU/SuSFS config block not found")
+          s = s.replace(old_cfg, new_cfg)
+
+          s = s.replace('KSU_ZIP_STR="ReSukiSU-SuSFS"', 'KSU_ZIP_STR="KernelSU"')
+          p.write_text(s)
+          PY
+
+          grep -n "KernelSU" build_kernel.sh
+          if grep -n "ReSukiSU\|KSU_SUSFS" build_kernel.sh; then
+            echo "[!] ReSukiSU/SuSFS references remain in build script."
+            exit 1
+          fi
+          echo "[+] Official KernelSU integration verified"
 
       - name: Build kernel
         working-directory: kernel
