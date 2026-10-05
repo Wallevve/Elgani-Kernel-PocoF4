@@ -124,8 +124,8 @@ jobs:
           p.write_text(s)
           PY
 
-          grep -n "tiann/KernelSU|official KernelSU|KSU_ZIP_STR" build_kernel.sh
-          if grep -n "ReSukiSU|KSU_SUSFS" build_kernel.sh; then
+          grep -En "tiann/KernelSU|official KernelSU|KSU_ZIP_STR" build_kernel.sh
+          if grep -En "ReSukiSU|KSU_SUSFS" build_kernel.sh; then
             echo "[!] ReSukiSU/SuSFS references remain in build script."
             exit 1
           fi
